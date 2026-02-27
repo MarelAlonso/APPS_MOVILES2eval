@@ -91,19 +91,26 @@ class _SearchScreenState extends State<SearchScreen> {
                 final imagen = apartamento.imagenes.isNotEmpty
                     ? apartamento.imagenes.first
                     : apartamento.urlImagen;
-                return Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => context.push(
-                      '/apartment-detail',
-                      extra: {
-                        'apartamento': apartamento,
-                        'modoCliente': true,
-                      },
-                    ),
+                return InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => context.push(
+                    '/apartment-detail',
+                    extra: {
+                      'apartamento': apartamento,
+                      'modoCliente': true,
+                    },
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
                     child: Card(
                       margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 3.0,
+                        ),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

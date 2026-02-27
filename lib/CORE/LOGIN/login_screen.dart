@@ -11,7 +11,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _emailOrUsernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
@@ -85,11 +85,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     setState(() => _isLoading = true);
     try {
-      final acceso = _emailOrUsernameController.text.trim();
+      final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
-      if (acceso.isEmpty || password.isEmpty) {
-        const msg = 'Introduce usuario/email y contraseña';
-        print(msg);
+      if (email.isEmpty || password.isEmpty) {
+        const msg = 'Introduce correo y contraseña';
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text(msg)),
@@ -97,120 +96,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
         return;
       }
-
-      Future<bool> intentarLoginConEmail(String email) async {
-        try {
-          await Supabase.instance.client.auth.signInWithPassword(
-            email: email,
-            password: password,
-          );
-          return true;
-        } on AuthException {
-          return false;
-        }
-      }
-
-      var autenticado = false;
-
-      if (acceso.contains('@')) {
-        autenticado = await intentarLoginConEmail(acceso);
-      } else {
-        // Login por username: buscar el email asociado en profiles
-        final usernameInput = acceso.trim();
-        print('Buscando username: "$usernameInput"');
-        try {
-          final perfil = await Supabase.instance.client
-              .from('profiles')
-              .select('email')
-              .ilike('username', usernameInput)
-              .maybeSingle();
-          print('Perfil encontrado: $perfil');
-          String? emailPerfil = perfil?['email']?.toString();
-          print('Email encontrado para login: $emailPerfil');
-          if (emailPerfil != null && emailPerfil.isNotEmpty) {
-            autenticado = await intentarLoginConEmail(emailPerfil);
-          } else {
-            const msg = 'No existe ese nombre de usuario.';
-            print(msg);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text(msg)),
-              );
-            }
-            return;
-          }
-        } catch (e) {
-          final msg = 'Error buscando el usuario: ' + e.toString();
-          print(msg);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(msg)),
-            );
-          }
-          return;
-        }
-      }
-
-      if (autenticado) {
-        // Forzar actualización de perfil en profiles tras cualquier login exitoso
-        final usuario = Supabase.instance.client.auth.currentUser;
-        if (usuario != null) {
-          String? username;
-          // Intentar obtener el username desde los metadatos o desde el acceso
-          username = usuario.userMetadata?['username']?.toString() ?? usuario.userMetadata?['display_name']?.toString();
-          if (username == null || username.isEmpty) {
-            username = usuario.email?.split('@').first ?? acceso;
-          }
-          try {
-            await Supabase.instance.client.from('profiles').upsert({
-              'id': usuario.id,
-              'username': username,
-              'email': usuario.email,
-            }, onConflict: 'id');
-          } catch (e) {
-            print('Error forzando upsert de perfil tras login: ' + e.toString());
-          }
-        }
-        final (perfilOk, detallePerfilError) = await _sincronizarPerfilTrasLogin(acceso);
-        if (mounted && !perfilOk) {
-          final msg = 'Sesión iniciada, pero no se pudo guardar el nombre en profiles. ${detallePerfilError ?? ''}';
-          print(msg);
+      try {
+        await Supabase.instance.client.auth.signInWithPassword(
+          email: email,
+          password: password,
+        );
+      } on AuthException catch (e) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(msg),
-            ),
+            SnackBar(content: Text(e.message)),
           );
         }
-        if (mounted) context.go('/inicio');
         return;
       }
-
-      if (mounted) {
-        const msg = 'No se pudo iniciar sesión. Revisa tus credenciales.';
-        print(msg);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(msg),
-          ),
-        );
+      final usuario = Supabase.instance.client.auth.currentUser;
+      if (usuario != null) {
+        String? username = usuario.userMetadata?['username']?.toString() ?? usuario.userMetadata?['display_name']?.toString();
+        if (username == null || username.isEmpty) {
+          username = usuario.email?.split('@').first ?? '';
+        }
+        try {
+          await Supabase.instance.client.from('profiles').upsert({
+            'id': usuario.id,
+            'username': username,
+            'email': usuario.email,
+          }, onConflict: 'id');
+        } catch (e) {
+          print('Error forzando upsert de perfil tras login: ' + e.toString());
+        }
       }
-    } on PostgrestException catch (error) {
-      final mensaje = error.code == 'PGRST204'
-          ? 'Falta la columna email en profiles. Debes añadirla para login por username.'
-          : error.message;
-      print(mensaje);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
-      }
-    } on AuthException catch (error) {
-      print(error.message);
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error.message)));
+      if (mounted) context.go('/inicio');
     } catch (error) {
       const msg = 'Se ha producido un error inesperado';
-      print(msg);
       if (mounted)
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text(msg)),
@@ -222,7 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   void dispose() {
-    _emailOrUsernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -230,7 +147,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: const Text('Inicio de sesión del propietario')),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -271,10 +187,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 32),
                     TextField(
-                      controller: _emailOrUsernameController,
+                      controller: _emailController,
                       decoration: const InputDecoration(
                         labelText: 'Correo',
-                        prefixIcon: Icon(Icons.person_outline),
+                        prefixIcon: Icon(Icons.email_outlined),
                         border: OutlineInputBorder(),
                       ),
                     ),
