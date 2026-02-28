@@ -1,3 +1,4 @@
+// Modelo apartamento, guarda datos piso
 class Apartamento {
   final String id;
   final String nombre;
@@ -29,6 +30,7 @@ class Apartamento {
     this.longitud,
   });
 
+  // Convierte valor a lista de texto, para servicios e imágenes
   static List<String> _aListaTexto(dynamic valor) {
     if (valor == null) return const [];
     if (valor is List) {
@@ -40,6 +42,7 @@ class Apartamento {
     return [valor.toString()];
   }
 
+  // Crea apartamento desde json, para pillar datos guardados
   factory Apartamento.fromJson(Map<String, dynamic> json) {
     return Apartamento(
       id: json['id'].toString(),

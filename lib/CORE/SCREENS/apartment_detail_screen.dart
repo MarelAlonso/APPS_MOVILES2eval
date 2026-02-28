@@ -9,6 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../MODELS/apartament_model.dart';
+import '../RESERVAS/reserva_calendar.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../RESERVAS/reservas_provider.dart';
 
 class ApartmentDetailScreen extends StatefulWidget {
   final Apartamento apartamento;
@@ -25,6 +28,101 @@ class ApartmentDetailScreen extends StatefulWidget {
 }
 
 class _ApartmentDetailScreenState extends State<ApartmentDetailScreen> {
+  void _mostrarCalendarioReserva() async {
+    // Aquí deberías obtener las reservas existentes para este apartamento desde la base de datos
+    // Por ahora, ejemplo vacío:
+    final reservasNoDisponibles = <DateTimeRange>[];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Selecciona fechas de reserva'),
+          content: SizedBox(
+            width: 350,
+            height: 400,
+            child: ReservaCalendar(
+              reservasNoDisponibles: reservasNoDisponibles,
+              onReservaSeleccionada: (rango) async {
+                Navigator.of(context).pop();
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Confirmar reserva'),
+                    content: Text('¿Está seguro que desea reservar del '
+                        '${rango.start.day}/${rango.start.month}/${rango.start.year} al '
+                        '${rango.end.day}/${rango.end.month}/${rango.end.year}?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancelar'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('Reservar'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm != true) return;
+
+                final user = Supabase.instance.client.auth.currentUser;
+                if (user == null) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Debes iniciar sesión para reservar.')),
+                    );
+                  }
+                  return;
+                }
+
+                try {
+                  final booking = {
+                    'apartment_id': widget.apartamento.id,
+                    'guest_name': user.userMetadata?['full_name'] ?? user.email ?? 'Invitado',
+                    'guest_email': user.email,
+                    'check_in': rango.start.toIso8601String(),
+                    'check_out': rango.end.toIso8601String(),
+                    'total_price': 0.0,
+                    'status': 'confirmed',
+                  };
+                  final response = await Supabase.instance.client.from('bookings').insert(booking).select();
+                  // Confirmación visual SIEMPRE
+                  if (mounted) {
+                    await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Reserva confirmada'),
+                        content: const Text('La reserva se ha realizado correctamente.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  // Refresca la pantalla de reservas usando el contexto de Riverpod correcto
+                  try {
+                    final element = context as Element;
+                    final owner = ProviderScope.containerOf(element, listen: false);
+                    owner.invalidate(reservasProvider);
+                  } catch (_) {}
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error al reservar: $e')),
+                    );
+                  }
+                }
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
   final ImagePicker _imagePicker = ImagePicker();
   bool _subiendoImagen = false;
   late Apartamento _apartamentoActual;
@@ -368,11 +466,7 @@ class _ApartmentDetailScreenState extends State<ApartmentDetailScreen> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Reserva en construcción')),
-                    );
-                  },
+                  onPressed: _mostrarCalendarioReserva,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),

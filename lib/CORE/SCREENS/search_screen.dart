@@ -182,10 +182,16 @@ class _SearchScreenState extends State<SearchScreen> {
             icon: Icon(Icons.apartment),
             label: 'Tus apartamentos',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month),
+            label: 'Reservas',
+          ),
         ],
         onTap: (index) {
           if (index == 1) {
             context.go('/apartments');
+          } else if (index == 2) {
+            context.go('/reservas');
           }
         },
       ),

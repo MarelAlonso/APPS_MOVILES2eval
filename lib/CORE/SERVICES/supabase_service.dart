@@ -6,9 +6,12 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 
+// Servicio para conectar con supabase, inicializa y guarda cliente
 class SupabaseService{
+    // Cliente supabase, para hacer consultas
     static final SupabaseClient client = Supabase.instance.client;
 
+    // Inicializa supabase, mete url y clave
     static Future<void> initialize() async {
         await Supabase.initialize(
             url: 'https://wgyilhmjbzugpcgaijqs.supabase.co',

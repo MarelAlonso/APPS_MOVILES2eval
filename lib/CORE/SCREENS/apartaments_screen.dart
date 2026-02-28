@@ -131,10 +131,16 @@ class _ApartmentsListScreenState extends State<ApartmentsListScreen> {
 						icon: Icon(Icons.apartment),
 						label: 'Tus apartamentos',
 					),
+					BottomNavigationBarItem(
+						icon: Icon(Icons.calendar_month),
+						label: 'Reservas',
+					),
 				],
 				onTap: (index) {
 					if (index == 0) {
 						context.go('/buscar');
+					} else if (index == 2) {
+						context.go('/reservas');
 					}
 				},
 			),

@@ -10,6 +10,7 @@ import 'CORE/SCREENS/apartment_detail_screen.dart';
 import 'CORE/SCREENS/apartaments_screen.dart';
 import 'CORE/SCREENS/home_screens.dart';
 import 'CORE/SCREENS/search_screen.dart';
+import 'CORE/RESERVAS/reservas_screen.dart';
 
 final GoRouter _appRouter = GoRouter(
   initialLocation: '/',
@@ -88,6 +89,11 @@ final GoRouter _appRouter = GoRouter(
         path: '/bookings',
         name: 'bookings',
         builder: (context, state) => const BookingsScreen(),
+      ),
+      GoRoute(
+        path: '/reservas',
+        name: 'reservas',
+        builder: (context, state) => const ReservasScreen(),
       ),
       GoRoute(
         path: '/perfil',

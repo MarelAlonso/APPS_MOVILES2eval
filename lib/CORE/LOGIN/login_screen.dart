@@ -122,7 +122,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             'email': usuario.email,
           }, onConflict: 'id');
         } catch (e) {
-          print('Error forzando upsert de perfil tras login: ' + e.toString());
         }
       }
       if (mounted) context.go('/inicio');

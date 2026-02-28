@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -11,10 +12,11 @@ class AppTheme {
   static const Color textPrimary = Color(0xFF212121);
   static const Color textSecondary = Color(0xFF757575);
 
+  // Devuelve el tema principal de la app
   static ThemeData get theme => ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
-      textTheme: GoogleFonts.manropeTextTheme(),
+        textTheme: GoogleFonts.manropeTextTheme(),
         colorScheme: ColorScheme.light(
           primary: primaryColor,
           secondary: secondaryColor,
@@ -23,7 +25,6 @@ class AppTheme {
           background: backgroundColor,
         ),
         scaffoldBackgroundColor: backgroundColor,
-        
         // AppBar Theme
         appBarTheme: const AppBarTheme(
           elevation: 0,
@@ -31,7 +32,6 @@ class AppTheme {
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
         ),
-        
         // Card Theme
         cardTheme: CardThemeData(
           elevation: 2,
@@ -40,7 +40,6 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        
         // Button Themes
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -98,7 +97,7 @@ class AppTheme {
         
       );
 
-  // Tema oscuro (opcional)
+  // Tema oscuro 
   static ThemeData get darkTheme => ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
