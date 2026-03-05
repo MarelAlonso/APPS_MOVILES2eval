@@ -146,5 +146,5 @@ class _ApartmentsListScreenState extends State<ApartmentsListScreen> {
 			),
 		);
 	}
-	// ...existing code...
+	
 }

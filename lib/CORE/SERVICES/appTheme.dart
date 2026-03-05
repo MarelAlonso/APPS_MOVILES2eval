@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Colores principales
+  // Colores principale
   static const Color primaryColor = Color.fromARGB(255, 25, 168, 220); // Arena oscurecida
   static const Color secondaryColor = Color.fromARGB(255, 141, 218, 246); // Variante arena
   static const Color errorColor = Color(0xFFB00020);
@@ -12,7 +12,7 @@ class AppTheme {
   static const Color textPrimary = Color(0xFF212121);
   static const Color textSecondary = Color(0xFF757575);
 
-  // Devuelve el tema principal de la app
+
   static ThemeData get theme => ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
@@ -25,14 +25,14 @@ class AppTheme {
           background: backgroundColor,
         ),
         scaffoldBackgroundColor: backgroundColor,
-        // AppBar Theme
+    
         appBarTheme: const AppBarTheme(
           elevation: 0,
           centerTitle: true,
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
         ),
-        // Card Theme
+        
         cardTheme: CardThemeData(
           elevation: 2,
           color: surfaceColor,
@@ -40,7 +40,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        // Button Themes
+        
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             elevation: 2,

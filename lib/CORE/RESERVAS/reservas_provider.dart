@@ -1,8 +1,14 @@
 
-// Provee reservas, busca en base datos y separa por dueño y usuario
+// Provee reservas, busca en base datos y separa por dueño y usuario. Incluye función para cancelar reserva.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'reserva_model.dart';
+
+// Función para cancelar (borrar) reserva por id
+Future<void> cancelarReserva(String reservaId) async {
+  final client = Supabase.instance.client;
+  await client.from('bookings').delete().eq('id', reservaId);
+}
 
 
 // Proveedor que busca reservas, separa por dueño y usuario, devuelve dos listas
